@@ -23,7 +23,7 @@ impl UserDao {
         Ok(())
     }
 
-    pub fn create_user(&self, user: &User) -> Result<(), PostgresError> {
+    pub fn create(&self, user: &User) -> Result<(), PostgresError> {
         let mut client = Client::connect(&self.db_url, NoTls)?;
         client.execute(
             "INSERT INTO users (name, email) VALUES ($1, $2)",
@@ -32,7 +32,7 @@ impl UserDao {
         Ok(())
     }
 
-    pub fn get_user_by_id(&self, id: i32) -> Result<User, PostgresError> {
+    pub fn find_by_id(&self, id: i32) -> Result<User, PostgresError> {
         let mut client = Client::connect(&self.db_url, NoTls)?;
         let row = client.query_one("SELECT * FROM users WHERE id = $1", &[&id])?;
         Ok(User {
@@ -42,7 +42,7 @@ impl UserDao {
         })
     }
 
-    pub fn get_all_users(&self) -> Result<Vec<User>, PostgresError> {
+    pub fn find_all(&self) -> Result<Vec<User>, PostgresError> {
         let mut client = Client::connect(&self.db_url, NoTls)?;
         let mut users = Vec::new();
         for row in client.query("SELECT * FROM users", &[])? {
@@ -55,7 +55,7 @@ impl UserDao {
         Ok(users)
     }
 
-    pub fn update_user(&self, id: i32, user: &User) -> Result<(), PostgresError> {
+    pub fn update(&self, id: i32, user: &User) -> Result<(), PostgresError> {
         let mut client = Client::connect(&self.db_url, NoTls)?;
         client.execute(
             "UPDATE users SET name = $1, email = $2 WHERE id = $3",
@@ -64,7 +64,7 @@ impl UserDao {
         Ok(())
     }
 
-    pub fn delete_user(&self, id: i32) -> Result<u64, PostgresError> {
+    pub fn delete(&self, id: i32) -> Result<u64, PostgresError> {
         let mut client = Client::connect(&self.db_url, NoTls)?;
         let result = client.execute("DELETE FROM users WHERE id = $1", &[&id])?;
         Ok(result)
