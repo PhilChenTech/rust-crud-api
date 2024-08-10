@@ -1,4 +1,5 @@
 mod user;
+mod db;
 
 #[macro_use]
 extern crate serde_derive;
@@ -8,20 +9,22 @@ use std::env;
 use std::net::TcpListener;
 use user::controller::UserController;
 use user::service::UserService;
-use user::dao::UserDao;
+use db::setup_database; // 導入 db 模組
 
 fn main() {
     dotenv().ok();
 
-    // 讀取 PORT 和 DATABASE_URL
+    // 讀取 PORT 環境變數
     let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-    let dao = UserDao::new(db_url.clone());
-    if let Err(e) = dao.set_database() {
-        println!("Error setting up the database: {}", e);
-        return;
-    }
+    // 設定資料庫
+    let dao = match setup_database() {
+        Ok(dao) => dao,
+        Err(e) => {
+            println!("Error setting up the database: {}", e);
+            return;
+        }
+    };
 
     let service = UserService::new(dao);
     let controller = UserController::new(service);
