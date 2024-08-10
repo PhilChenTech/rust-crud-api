@@ -13,6 +13,9 @@ use dao::UserDao;
 
 fn main() {
     dotenv().ok();
+
+    // 讀取 PORT 和 DATABASE_URL
+    let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let dao = UserDao::new(db_url.clone());
@@ -24,8 +27,9 @@ fn main() {
     let service = UserService::new(dao);
     let controller = UserController::new(service);
 
-    let listener = TcpListener::bind("0.0.0.0:8080").unwrap();
-    println!("Server started at port 8080");
+    let address = format!("0.0.0.0:{}", port);
+    let listener = TcpListener::bind(&address).unwrap();
+    println!("Server started at {}", address);
 
     for stream in listener.incoming() {
         match stream {
