@@ -1,5 +1,5 @@
 use postgres::{Client, NoTls, Error as PostgresError};
-use crate::model::User;
+use crate::user::model::User;
 
 
 pub struct UserDao {

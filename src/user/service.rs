@@ -1,9 +1,10 @@
-use crate::dao::UserDao;
-use crate::model::User;
+use crate::user::dao::UserDao;
+use crate::user::model::User;
 
 pub struct UserService {
     pub dao: UserDao,
 }
+
 
 impl UserService {
     pub fn new(dao: UserDao) -> Self {

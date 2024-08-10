@@ -1,15 +1,14 @@
-mod controller;
-mod service;
-mod dao;
-mod model;
+mod user;
+
 #[macro_use]
 extern crate serde_derive;
+
 use dotenv::dotenv;
 use std::env;
 use std::net::TcpListener;
-use controller::UserController;
-use service::UserService;
-use dao::UserDao;
+use user::controller::UserController;
+use user::service::UserService;
+use user::dao::UserDao;
 
 fn main() {
     dotenv().ok();
