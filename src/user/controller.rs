@@ -24,10 +24,10 @@ impl UserController {
             request.push_str(String::from_utf8_lossy(&buffer[..size]).as_ref());
 
             let (status_line, content) = match &*request {
-                r if r.starts_with("POST /users") => self.handle_post_request(r),
-                r if r.starts_with("GET /users/") => self.handle_get_request(r),
-                r if r.starts_with("GET /users") => self.handle_get_all_request(),
-                r if r.starts_with("PUT /users/") => self.handle_put_request(r),
+                r if r.starts_with("POST /users") => self.create(r),
+                r if r.starts_with("GET /users/") => self.get_by_id(r),
+                r if r.starts_with("GET /users") => self.get_all(),
+                r if r.starts_with("PUT /users/") => self.update(r),
                 r if r.starts_with("DELETE /users/") => self.handle_delete_request(r),
                 _ => (NOT_FOUND.to_string(), "404 Not Found".to_string()),
             };
@@ -36,9 +36,9 @@ impl UserController {
         }
     }
 
-    fn handle_post_request(&self, request: &str) -> (String, String) {
+    fn create(&self, request: &str) -> (String, String) {
         match get_user_request_body(&request) {
-            Ok(user) => match self.service.create_user(&user) {
+            Ok(user) => match self.service.create(&user) {
                 Ok(_) => (OK_RESPONSE.to_string(), "User created".to_string()),
                 Err(_) => (INTERNAL_SERVER_ERROR.to_string(), "Error".to_string()),
             },
@@ -46,9 +46,9 @@ impl UserController {
         }
     }
 
-    fn handle_get_request(&self, request: &str) -> (String, String) {
+    fn get_by_id(&self, request: &str) -> (String, String) {
         match get_id(&request).parse::<i32>() {
-            Ok(id) => match self.service.get_user_by_id(id) {
+            Ok(id) => match self.service.find_by_id(id) {
                 Ok(user) => (OK_RESPONSE.to_string(), serde_json::to_string(&user).unwrap()),
                 Err(_) => (NOT_FOUND.to_string(), "User not found".to_string()),
             },
@@ -56,16 +56,16 @@ impl UserController {
         }
     }
 
-    fn handle_get_all_request(&self) -> (String, String) {
-        match self.service.get_all_users() {
+    fn get_all(&self) -> (String, String) {
+        match self.service.find_all() {
             Ok(users) => (OK_RESPONSE.to_string(), serde_json::to_string(&users).unwrap()),
             Err(_) => (INTERNAL_SERVER_ERROR.to_string(), "Error".to_string()),
         }
     }
 
-    fn handle_put_request(&self, request: &str) -> (String, String) {
+    fn update(&self, request: &str) -> (String, String) {
         match (get_id(&request).parse::<i32>(), get_user_request_body(&request)) {
-            (Ok(id), Ok(user)) => match self.service.update_user(id, &user) {
+            (Ok(id), Ok(user)) => match self.service.update(id, &user) {
                 Ok(_) => (OK_RESPONSE.to_string(), "User updated".to_string()),
                 Err(_) => (INTERNAL_SERVER_ERROR.to_string(), "Error".to_string()),
             },
@@ -75,7 +75,7 @@ impl UserController {
 
     fn handle_delete_request(&self, request: &str) -> (String, String) {
         match get_id(&request).parse::<i32>() {
-            Ok(id) => match self.service.delete_user(id) {
+            Ok(id) => match self.service.delete(id) {
                 Ok(true) => (OK_RESPONSE.to_string(), "User deleted".to_string()),
                 Ok(false) => (NOT_FOUND.to_string(), "User not found".to_string()),
                 Err(_) => (INTERNAL_SERVER_ERROR.to_string(), "Error".to_string()),
